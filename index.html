@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d0f12" />
+    <meta name="description" content="Personaliza el tapizado de tu auto en 3D con Tapiz Juliaca Autoboutique." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Diseña tu tapiz · Tapiz Juliaca</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <a class="brand" href="#configurador" aria-label="Tapiz Juliaca, inicio">
+          <span class="brand-mark" aria-hidden="true">TJ</span>
+          <span><strong>TAPIZ JULIACA</strong><small>AUTOBOUTIQUE</small></span>
+        </a>
+        <div class="top-actions">
+          <button class="ghost-button" id="resetButton" type="button">Reiniciar</button>
+          <a class="contact-pill" href="https://wa.me/51931039672" target="_blank" rel="noreferrer">WhatsApp <span>+51 931 039 672</span></a>
+        </div>
+      </header>
+
+      <main id="configurador" class="workspace">
+        <section class="viewer" aria-label="Vista 3D del tapizado">
+          <div class="viewer-heading">
+            <div>
+              <p class="eyebrow">CONFIGURADOR 3D</p>
+              <h1>Hazlo a tu estilo.</h1>
+            </div>
+            <div class="viewer-tools" aria-label="Controles de vista">
+              <button class="icon-button is-active" id="spinButton" type="button" aria-pressed="true" title="Activar o pausar giro automático">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M6.1 8.2A7 7 0 0 1 18.7 7L20 12M4 12l1.3 5a7 7 0 0 0 12.6-1.2"/></svg>
+              </button>
+              <button class="icon-button" id="viewButton" type="button" title="Restablecer vista">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas id="seatCanvas" aria-label="Modelo 3D interactivo de un asiento automotriz"></canvas>
+            <div class="canvas-badge"><span></span> Vista 3D en vivo</div>
+            <div class="drag-hint">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11V7a2 2 0 1 1 4 0v3-1a2 2 0 1 1 4 0v2-1a2 2 0 1 1 4 0v5c0 4-2.7 6-6.5 6H12c-2.2 0-3.5-.8-4.8-2.5L4 14.5a2 2 0 0 1 3-2.7L8 13v-2Z"/></svg>
+              Arrastra para girar · rueda para acercar
+            </div>
+          </div>
+
+          <div class="zone-selector" aria-label="Zona a personalizar">
+            <span>APLICAR EN</span>
+            <button class="zone is-active" type="button" data-zone="all">Asiento completo</button>
+            <button class="zone" type="button" data-zone="center">Panel central</button>
+            <button class="zone" type="button" data-zone="sides">Laterales</button>
+          </div>
+        </section>
+
+        <aside class="customizer" aria-label="Opciones de personalización">
+          <div class="step-head">
+            <span>PASO <strong id="stepNumber">01</strong> / 04</span>
+            <span class="live-label">CAMBIOS EN VIVO</span>
+          </div>
+
+          <section class="control-section">
+            <div class="section-title"><span>01</span><div><h2>Elige el diseño</h2><p>Inspirado en nuestra colección 2026</p></div></div>
+            <div class="design-grid" id="designGrid">
+              <button class="design-card is-active" type="button" data-design="rombo"><span class="pattern pattern-rombo"></span><strong>Rombo Andino</strong><small>TJ-01 · Geométrico</small><i aria-hidden="true">✓</i></button>
+              <button class="design-card" type="button" data-design="titicaca"><span class="pattern pattern-titicaca"></span><strong>Titicaca</strong><small>F-07 · Paneles</small><i aria-hidden="true">✓</i></button>
+              <button class="design-card" type="button" data-design="mantaro"><span class="pattern pattern-mantaro"></span><strong>Mantaro</strong><small>F-02 · Contraste</small><i aria-hidden="true">✓</i></button>
+              <button class="design-card" type="button" data-design="original"><span class="pattern pattern-original"></span><strong>Original</strong><small>F-17 · Sobrio</small><i aria-hidden="true">✓</i></button>
+            </div>
+          </section>
+
+          <section class="control-section">
+            <div class="section-title"><span>02</span><div><h2>Combina tus colores</h2><p>Base, contraste y costura</p></div></div>
+            <div class="color-row"><label>Color principal</label><div class="swatches" data-target="base"><button type="button" class="swatch is-active" data-color="#24272c" style="--swatch:#24272c" aria-label="Negro"></button><button type="button" class="swatch" data-color="#d9d7d0" style="--swatch:#d9d7d0" aria-label="Marfil"></button><button type="button" class="swatch" data-color="#5a331f" style="--swatch:#5a331f" aria-label="Cacao"></button><button type="button" class="swatch" data-color="#243247" style="--swatch:#243247" aria-label="Azul noche"></button></div></div>
+            <div class="color-row"><label>Contraste</label><div class="swatches" data-target="accent"><button type="button" class="swatch is-active" data-color="#ee2737" style="--swatch:#ee2737" aria-label="Rojo"></button><button type="button" class="swatch" data-color="#c9974f" style="--swatch:#c9974f" aria-label="Caramelo"></button><button type="button" class="swatch" data-color="#777b80" style="--swatch:#777b80" aria-label="Grafito"></button><button type="button" class="swatch" data-color="#16735e" style="--swatch:#16735e" aria-label="Verde"></button></div></div>
+            <div class="color-row"><label>Costura</label><div class="swatches" data-target="stitch"><button type="button" class="swatch is-active" data-color="#ef3340" style="--swatch:#ef3340" aria-label="Rojo"></button><button type="button" class="swatch" data-color="#f4f0e8" style="--swatch:#f4f0e8" aria-label="Blanco"></button><button type="button" class="swatch" data-color="#d5a84f" style="--swatch:#d5a84f" aria-label="Dorado"></button><button type="button" class="swatch" data-color="#202124" style="--swatch:#202124" aria-label="Negro"></button></div></div>
+          </section>
+
+          <section class="control-section material-section">
+            <div class="section-title"><span>03</span><div><h2>Elige el tacto</h2><p>Acabado visual del material</p></div></div>
+            <div class="material-list" id="materialList">
+              <button type="button" class="material-option is-active" data-material="cuero"><span class="material-dot leather"></span><span><strong>Tacto cuero</strong><small>Práctico y elegante</small></span><i>✓</i></button>
+              <button type="button" class="material-option" data-material="pranna"><span class="material-dot pranna"></span><span><strong>Pranna</strong><small>Textura marcada</small></span><i>✓</i></button>
+              <button type="button" class="material-option" data-material="detroit"><span class="material-dot detroit"></span><span><strong>Detroit</strong><small>Carácter deportivo</small></span><i>✓</i></button>
+              <button type="button" class="material-option" data-material="natural"><span class="material-dot natural"></span><span><strong>Cuero natural</strong><small>Veta y tacto premium</small></span><i>✓</i></button>
+            </div>
+          </section>
+
+          <section class="summary-card">
+            <div><span>TU CONFIGURACIÓN</span><strong id="summaryName">Rombo Andino · Tacto cuero</strong><small id="summaryDetail">Negro + rojo · asiento completo</small></div>
+            <button id="quoteButton" type="button">Cotizar este diseño</button>
+          </section>
+        </aside>
+      </main>
+
+      <section class="catalog-strip" aria-label="Colección Tapiz Juliaca 2026">
+        <img src="/catalogo-2026.jpg" alt="Asientos tapizados en negro y rojo de la colección Tapiz Juliaca 2026" />
+        <div><p class="eyebrow">COLECCIÓN 2026</p><h2>Un diseño que se parece a ti.</h2><p>Explora combinaciones en 3D y envíanos tu elección. Confirmaremos tonos, adaptación y disponibilidad para tu vehículo.</p><a href="../Catalogo_Tapiz_Juliaca_2026.pdf" target="_blank">Ver catálogo completo</a></div>
+      </section>
+
+      <footer><span>Tapiz Juliaca Autoboutique</span><span>Juliaca, Perú · +51 931 039 672</span></footer>
+
+      <dialog id="quoteDialog">
+        <form method="dialog" id="quoteForm">
+          <button class="dialog-close" value="cancel" aria-label="Cerrar">×</button>
+          <p class="eyebrow">COTIZACIÓN PERSONALIZADA</p>
+          <h2>Tu diseño está listo.</h2>
+          <p>Completa estos datos y enviaremos la configuración por WhatsApp.</p>
+          <label>Marca y modelo<input id="vehicleModel" name="model" placeholder="Ej. Toyota Yaris" required /></label>
+          <label>Año<input id="vehicleYear" name="year" type="number" min="1980" max="2030" placeholder="Ej. 2022" required /></label>
+          <div class="dialog-config"><span id="dialogPattern">Rombo Andino</span><span id="dialogMaterial">Tacto cuero</span><span id="dialogColors">Negro + rojo</span></div>
+          <button class="whatsapp-button" value="default" type="submit">Enviar por WhatsApp</button>
+          <small>La cotización final depende del vehículo, material y piezas elegidas.</small>
+        </form>
+      </dialog>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
