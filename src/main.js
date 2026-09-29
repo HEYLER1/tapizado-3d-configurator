@@ -6,9 +6,9 @@ import './style.css';
 const state = {
   design: 'rombo',
   designName: 'Rombo Andino',
-  base: '#24272c',
-  accent: '#ee2737',
-  stitch: '#ef3340',
+  base: '#d9d7d0',
+  accent: '#777b80',
+  stitch: '#f4f0e8',
   material: 'cuero',
   materialName: 'Tacto cuero',
   zone: 'all',
@@ -26,9 +26,9 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.15;
 
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
-camera.position.set(5.8, 3.8, 8.5);
+camera.position.set(5.4, 3.45, 8.9);
 const controls = new OrbitControls(camera, canvas);
-controls.target.set(0, 2.4, 0);
+controls.target.set(0, 2.25, 0);
 controls.enableDamping = true;
 controls.dampingFactor = 0.055;
 controls.enablePan = false;
@@ -99,13 +99,15 @@ function extruded(shape, depth, bevel, material, position, rotation = [0, 0, 0],
 
 function backShape(inset = 0) {
   const s = new THREE.Shape();
-  const w = 1.22 - inset;
-  s.moveTo(-w, .08 + inset);
-  s.bezierCurveTo(-w - .08, .82, -1.08 + inset, 2.52, -.77 + inset * .2, 3.12 - inset);
-  s.bezierCurveTo(-.58, 3.42 - inset, -.35, 3.5 - inset, 0, 3.5 - inset);
-  s.bezierCurveTo(.35, 3.5 - inset, .58, 3.42 - inset, .77 - inset * .2, 3.12 - inset);
-  s.bezierCurveTo(1.08 - inset, 2.52, w + .08, .82, w, .08 + inset);
-  s.bezierCurveTo(.68, -.08 + inset, -.68, -.08 + inset, -w, .08 + inset);
+  const lower = 1.02 - inset * .45;
+  const shoulder = 1.2 - inset;
+  s.moveTo(-lower, .06 + inset);
+  s.bezierCurveTo(-1.12 + inset, .72, -1.1 + inset, 1.8, -shoulder, 2.58 - inset);
+  s.bezierCurveTo(-1.22 + inset, 2.92, -1.0 + inset, 3.2 - inset, -.72 + inset, 3.28 - inset);
+  s.bezierCurveTo(-.35, 3.36 - inset, .35, 3.36 - inset, .72 - inset, 3.28 - inset);
+  s.bezierCurveTo(1.0 - inset, 3.2 - inset, 1.22 - inset, 2.92, shoulder, 2.58 - inset);
+  s.bezierCurveTo(1.1 - inset, 1.8, 1.12 - inset, .72, lower, .06 + inset);
+  s.bezierCurveTo(.62, -.1 + inset, -.62, -.1 + inset, -lower, .06 + inset);
   s.closePath();
   return s;
 }
@@ -122,40 +124,65 @@ function cushionShape(inset = 0) {
   return s;
 }
 
-// Low-profile automotive rails and pedestal.
-addMesh(new RoundedBoxGeometry(2.75, .34, 2.25, 5, .14), darkPlastic, [0, .05, -.02]);
+// Low-profile rails and the dark lower shell found on modern touring seats.
+addMesh(new RoundedBoxGeometry(2.72, .48, 2.3, 6, .16), darkPlastic, [0, .12, -.02]);
 addMesh(new RoundedBoxGeometry(.16, .14, 2.7, 4, .04), darkPlastic, [-.87, -.17, -.02]);
 addMesh(new RoundedBoxGeometry(.16, .14, 2.7, 4, .04), darkPlastic, [.87, -.17, -.02]);
 
-// One continuous, sculpted cushion plus a raised upholstered insert.
+// Deep, softly rolled cushion with a separate quilted leather centre.
 extruded(cushionShape(), .5, .13, baseMaterial, [0, .69, .08], [Math.PI / 2, 0, 0], seat, 'base');
 extruded(cushionShape(.28), .18, .1, centerMaterial, [0, 1.02, .05], [Math.PI / 2, 0, 0], seat, 'center');
 
+// Lower side valances stay dark, like the CGTrader touring-seat reference.
+addMesh(new RoundedBoxGeometry(.28, .55, 2.12, 6, .1), darkPlastic, [-1.25, .42, -.02]);
+addMesh(new RoundedBoxGeometry(.28, .55, 2.12, 6, .1), darkPlastic, [1.25, .42, -.02]);
+
 // Tapered automotive backrest: outer shell and inset panel share the same silhouette.
 const back = new THREE.Group();
-back.position.set(0, 1.2, -1.08);
-back.rotation.x = -.13;
+back.position.set(0, 1.19, -1.08);
+back.rotation.x = -.1;
 seat.add(back);
 extruded(backShape(), .64, .14, baseMaterial, [0, 0, 0], [0, 0, 0], back, 'base');
-extruded(backShape(.3), .13, .09, centerMaterial, [0, .05, .39], [0, 0, 0], back, 'center');
+extruded(backShape(.27), .13, .09, centerMaterial, [0, .03, .39], [0, 0, 0], back, 'center');
 
-// Shoulder accents make the color contrast read as part of the upholstery, not a loose bar.
+// Slim side bolsters: less racing-seat, more premium road-car silhouette.
 const leftAccent = new THREE.Shape();
-leftAccent.moveTo(-1.02, .28); leftAccent.bezierCurveTo(-1.08, 1.25, -.92, 2.55, -.66, 3.02); leftAccent.lineTo(-.48, 2.78); leftAccent.bezierCurveTo(-.7, 2.1, -.76, .9, -.72, .35); leftAccent.closePath();
+leftAccent.moveTo(-1.0, .28); leftAccent.bezierCurveTo(-1.08, 1.15, -1.02, 2.25, -.96, 2.7); leftAccent.lineTo(-.72, 2.58); leftAccent.bezierCurveTo(-.79, 1.72, -.78, .88, -.7, .34); leftAccent.closePath();
 extruded(leftAccent, .12, .045, accentMaterial, [0, 0, .47], [0, 0, 0], back, 'accent');
 const rightAccent = leftAccent.clone();
 const rightMesh = extruded(rightAccent, .12, .045, accentMaterial, [0, 0, .47], [0, 0, 0], back, 'accent');
 rightMesh.scale.x = -1;
 
-// Contoured headrest and metal posts.
-addMesh(new THREE.CapsuleGeometry(.055, .6, 8, 12), darkPlastic, [-.43, 4.24, -1.49]);
-addMesh(new THREE.CapsuleGeometry(.055, .6, 8, 12), darkPlastic, [.43, 4.24, -1.49]);
+// Broad shoulder pad and a clearly separated adjustable headrest.
+addMesh(new RoundedBoxGeometry(2.35, .52, .68, 10, .2), baseMaterial, [0, 4.02, -1.18], [-.08, 0, 0], seat, 'base');
+addMesh(new THREE.CapsuleGeometry(.045, .5, 8, 12), darkPlastic, [-.42, 4.42, -1.46]);
+addMesh(new THREE.CapsuleGeometry(.045, .5, 8, 12), darkPlastic, [.42, 4.42, -1.46]);
 const head = new THREE.Shape();
-head.moveTo(-.86, 0); head.bezierCurveTo(-1.0, .1, -.94, .85, -.66, 1.0); head.bezierCurveTo(-.36, 1.14, .36, 1.14, .66, 1.0); head.bezierCurveTo(.94, .85, 1.0, .1, .86, 0); head.bezierCurveTo(.45, -.13, -.45, -.13, -.86, 0); head.closePath();
-extruded(head, .62, .13, baseMaterial, [0, 4.02, -1.39], [-.08, 0, 0], seat, 'base');
+head.moveTo(-.72, 0); head.bezierCurveTo(-.9, .1, -.86, .88, -.62, 1.02); head.bezierCurveTo(-.33, 1.18, .33, 1.18, .62, 1.02); head.bezierCurveTo(.86, .88, .9, .1, .72, 0); head.bezierCurveTo(.4, -.12, -.4, -.12, -.72, 0); head.closePath();
+extruded(head, .68, .14, baseMaterial, [0, 4.28, -1.4], [-.08, 0, 0], seat, 'base');
 const headInset = head.clone();
-const headCenter = extruded(headInset, .08, .055, centerMaterial, [0, 4.02, -1.03], [-.08, 0, 0], seat, 'center');
-headCenter.scale.set(.72, .65, 1);
+const headCenter = extruded(headInset, .08, .055, centerMaterial, [0, 4.28, -1.01], [-.08, 0, 0], seat, 'center');
+headCenter.scale.set(.78, .7, 1);
+
+// Visible integrated seat belt, lower buckle and side adjustment controls.
+const beltMaterial = new THREE.MeshStandardMaterial({ color: 0x17181b, roughness: .88, metalness: 0 });
+function beltSegment(a, b, width = .14) {
+  const start = new THREE.Vector3(...a);
+  const end = new THREE.Vector3(...b);
+  const midpoint = start.clone().add(end).multiplyScalar(.5);
+  const length = start.distanceTo(end);
+  const mesh = addMesh(new RoundedBoxGeometry(width, length, .045, 4, .018), beltMaterial, [midpoint.x, midpoint.y, midpoint.z]);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), end.clone().sub(start).normalize());
+  return mesh;
+}
+beltSegment([1.26, 4.22, -1.33], [1.45, 2.35, -1.23], .16);
+beltSegment([1.45, 2.35, -1.23], [1.35, .52, -.62], .16);
+addMesh(new RoundedBoxGeometry(.24, .18, .1, 4, .04), darkPlastic, [1.44, 2.37, -1.2], [0, 0, -.04]);
+addMesh(new RoundedBoxGeometry(.24, .42, .2, 5, .06), darkPlastic, [-1.18, .82, .56], [0, 0, -.14]);
+addMesh(new RoundedBoxGeometry(.14, .12, .1, 4, .03), new THREE.MeshStandardMaterial({ color: 0xe73646, roughness: .45 }), [-1.18, 1.04, .57]);
+const controlsPanel = addMesh(new RoundedBoxGeometry(.1, .3, .68, 5, .04), darkPlastic, [1.41, .55, .24], [0, 0, 0]);
+addMesh(new RoundedBoxGeometry(.06, .09, .24, 3, .025), new THREE.MeshStandardMaterial({ color: 0xaeb2b5, roughness: .35, metalness: .55 }), [1.47, .57, .1]);
+addMesh(new RoundedBoxGeometry(.06, .11, .12, 3, .025), new THREE.MeshStandardMaterial({ color: 0xaeb2b5, roughness: .35, metalness: .55 }), [1.47, .57, .42]);
 
 // Piping follows the real panel edges and remains visible from oblique angles.
 function line(points, parent = seat, radius = .022) {
@@ -242,8 +269,8 @@ function colorName(hex) {
 }
 
 function resetView() {
-  camera.position.set(5.8, 3.8, 8.5);
-  controls.target.set(0, 2.4, 0);
+  camera.position.set(5.4, 3.45, 8.9);
+  controls.target.set(0, 2.25, 0);
   controls.update();
 }
 
@@ -288,7 +315,7 @@ document.querySelector('#spinButton').addEventListener('click', event => {
 document.querySelector('#viewButton').addEventListener('click', resetView);
 
 document.querySelector('#resetButton').addEventListener('click', () => {
-  Object.assign(state, { design: 'rombo', designName: 'Rombo Andino', base: '#24272c', accent: '#ee2737', stitch: '#ef3340', material: 'cuero', materialName: 'Tacto cuero', zone: 'all', zoneName: 'asiento completo' });
+  Object.assign(state, { design: 'rombo', designName: 'Rombo Andino', base: '#d9d7d0', accent: '#777b80', stitch: '#f4f0e8', material: 'cuero', materialName: 'Tacto cuero', zone: 'all', zoneName: 'asiento completo' });
   document.querySelectorAll('.design-card').forEach((el, i) => el.classList.toggle('is-active', i === 0));
   document.querySelectorAll('.swatches').forEach(group => group.querySelectorAll('.swatch').forEach((el, i) => el.classList.toggle('is-active', i === 0)));
   document.querySelectorAll('.material-option').forEach((el, i) => el.classList.toggle('is-active', i === 0));
