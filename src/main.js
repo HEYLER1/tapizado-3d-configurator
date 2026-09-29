@@ -204,6 +204,7 @@ line([[.7,.18,.5],[.76,1.55,.51],[.55,2.88,.5]], back);
 new GLTFLoader().load('/models/tapiz_asiento_premium.glb', gltf => {
   const model = gltf.scene;
   model.name = 'Tapiz_Juliaca_Blender';
+  model.scale.setScalar(1.13);
   model.rotation.y = -.12;
   model.traverse(object => {
     if (!object.isMesh) return;
