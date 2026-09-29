@@ -23,7 +23,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.35;
+renderer.toneMappingExposure = 1.15;
 
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
 camera.position.set(5.8, 3.8, 8.5);
@@ -39,8 +39,8 @@ controls.maxPolarAngle = Math.PI * 0.56;
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0.72;
 
-scene.add(new THREE.HemisphereLight(0xe6efff, 0x353943, 4.1));
-scene.add(new THREE.AmbientLight(0xffffff, 1.4));
+scene.add(new THREE.HemisphereLight(0xe6efff, 0x353943, 3.5));
+scene.add(new THREE.AmbientLight(0xffffff, 1.05));
 const key = new THREE.DirectionalLight(0xffffff, 4.2);
 key.position.set(4, 8, 6);
 key.castShadow = true;
@@ -49,7 +49,7 @@ scene.add(key);
 const rim = new THREE.DirectionalLight(0xf12840, 2.1);
 rim.position.set(-5, 4, -4);
 scene.add(rim);
-const fill = new THREE.DirectionalLight(0xaec8ff, 2.6);
+const fill = new THREE.DirectionalLight(0xaec8ff, 2.2);
 fill.position.set(-4, 5, 5);
 scene.add(fill);
 
@@ -60,7 +60,7 @@ floor.receiveShadow = true;
 scene.add(floor);
 
 const seat = new THREE.Group();
-seat.rotation.y = -0.1;
+seat.rotation.y = -0.16;
 scene.add(seat);
 
 const baseMaterial = new THREE.MeshPhysicalMaterial({ color: state.base, roughness: 0.5, metalness: 0.02, clearcoat: 0.2, clearcoatRoughness: 0.55 });
@@ -71,67 +71,104 @@ const darkPlastic = new THREE.MeshStandardMaterial({ color: 0x0a0b0e, roughness:
 
 const meshes = { base: [], accent: [], center: [], stitch: [] };
 
-function rounded(w, h, d, radius, material, position, rotation = [0, 0, 0], bucket = null) {
-  const geometry = new RoundedBoxGeometry(w, h, d, 5, radius);
+function addMesh(geometry, material, position, rotation = [0, 0, 0], parent = seat, bucket = null) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(...position);
   mesh.rotation.set(...rotation);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  seat.add(mesh);
+  parent.add(mesh);
   if (bucket) meshes[bucket].push(mesh);
   return mesh;
 }
 
-// Understructure and rails.
-rounded(2.7, .38, 2.35, .14, darkPlastic, [0, .05, 0]);
-rounded(.18, .18, 2.55, .04, darkPlastic, [-.88, -.15, 0]);
-rounded(.18, .18, 2.55, .04, darkPlastic, [.88, -.15, 0]);
+function extruded(shape, depth, bevel, material, position, rotation = [0, 0, 0], parent = seat, bucket = null) {
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth,
+    curveSegments: 20,
+    bevelEnabled: true,
+    bevelSegments: 6,
+    bevelSize: bevel,
+    bevelThickness: bevel,
+    steps: 1,
+  });
+  geometry.translate(0, 0, -depth / 2);
+  geometry.computeVertexNormals();
+  return addMesh(geometry, material, position, rotation, parent, bucket);
+}
 
-// Cushion: central insert, bolsters and front lip.
-rounded(1.75, .48, 2.22, .22, centerMaterial, [0, .58, .04], [-.06, 0, 0], 'center');
-rounded(.55, .62, 2.28, .24, baseMaterial, [-1.06, .66, .01], [-.06, 0, -.08], 'base');
-rounded(.55, .62, 2.28, .24, baseMaterial, [1.06, .66, .01], [-.06, 0, .08], 'base');
-rounded(1.78, .24, .28, .1, accentMaterial, [0, .82, 1.02], [-.06, 0, 0], 'accent');
+function backShape(inset = 0) {
+  const s = new THREE.Shape();
+  const w = 1.22 - inset;
+  s.moveTo(-w, .08 + inset);
+  s.bezierCurveTo(-w - .08, .82, -1.08 + inset, 2.52, -.77 + inset * .2, 3.12 - inset);
+  s.bezierCurveTo(-.58, 3.42 - inset, -.35, 3.5 - inset, 0, 3.5 - inset);
+  s.bezierCurveTo(.35, 3.5 - inset, .58, 3.42 - inset, .77 - inset * .2, 3.12 - inset);
+  s.bezierCurveTo(1.08 - inset, 2.52, w + .08, .82, w, .08 + inset);
+  s.bezierCurveTo(.68, -.08 + inset, -.68, -.08 + inset, -w, .08 + inset);
+  s.closePath();
+  return s;
+}
 
-// Back, tilted slightly backwards.
+function cushionShape(inset = 0) {
+  const s = new THREE.Shape();
+  const side = 1.34 - inset;
+  s.moveTo(-1.02 + inset, -1.13 + inset);
+  s.bezierCurveTo(-side, -.86, -side, .58, -1.06 + inset, 1.08 - inset);
+  s.bezierCurveTo(-.76, 1.35 - inset, .76, 1.35 - inset, 1.06 - inset, 1.08 - inset);
+  s.bezierCurveTo(side, .58, side, -.86, 1.02 - inset, -1.13 + inset);
+  s.bezierCurveTo(.68, -1.3 + inset, -.68, -1.3 + inset, -1.02 + inset, -1.13 + inset);
+  s.closePath();
+  return s;
+}
+
+// Low-profile automotive rails and pedestal.
+addMesh(new RoundedBoxGeometry(2.75, .34, 2.25, 5, .14), darkPlastic, [0, .05, -.02]);
+addMesh(new RoundedBoxGeometry(.16, .14, 2.7, 4, .04), darkPlastic, [-.87, -.17, -.02]);
+addMesh(new RoundedBoxGeometry(.16, .14, 2.7, 4, .04), darkPlastic, [.87, -.17, -.02]);
+
+// One continuous, sculpted cushion plus a raised upholstered insert.
+extruded(cushionShape(), .5, .13, baseMaterial, [0, .69, .08], [Math.PI / 2, 0, 0], seat, 'base');
+extruded(cushionShape(.28), .18, .1, centerMaterial, [0, 1.02, .05], [Math.PI / 2, 0, 0], seat, 'center');
+
+// Tapered automotive backrest: outer shell and inset panel share the same silhouette.
 const back = new THREE.Group();
-back.position.set(0, 1.58, -1.03);
+back.position.set(0, 1.2, -1.08);
 back.rotation.x = -.13;
 seat.add(back);
-function backPart(w, h, d, radius, material, x, y, z, bucket) {
-  const mesh = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 5, radius), material);
-  mesh.position.set(x, y, z);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  back.add(mesh);
-  meshes[bucket].push(mesh);
-  return mesh;
-}
-backPart(1.72, 2.72, .44, .2, centerMaterial, 0, 1.03, 0, 'center');
-backPart(.57, 2.9, .7, .23, baseMaterial, -1.07, .98, .01, 'base').rotation.z = -.07;
-backPart(.57, 2.9, .7, .23, baseMaterial, 1.07, .98, .01, 'base').rotation.z = .07;
-backPart(1.72, .24, .26, .09, accentMaterial, 0, -.17, .31, 'accent');
-backPart(1.62, .18, .2, .07, accentMaterial, 0, 2.1, .25, 'accent');
+extruded(backShape(), .64, .14, baseMaterial, [0, 0, 0], [0, 0, 0], back, 'base');
+extruded(backShape(.3), .13, .09, centerMaterial, [0, .05, .39], [0, 0, 0], back, 'center');
 
-// Headrest and posts.
-rounded(.11, .75, .11, .04, darkPlastic, [-.48, 4.37, -1.26]);
-rounded(.11, .75, .11, .04, darkPlastic, [.48, 4.37, -1.26]);
-rounded(1.83, 1.08, .66, .26, baseMaterial, [0, 4.57, -1.25], [-.08, 0, 0], 'base');
-rounded(1.2, .7, .12, .2, centerMaterial, [0, 4.58, -.9], [-.08, 0, 0], 'center');
+// Shoulder accents make the color contrast read as part of the upholstery, not a loose bar.
+const leftAccent = new THREE.Shape();
+leftAccent.moveTo(-1.02, .28); leftAccent.bezierCurveTo(-1.08, 1.25, -.92, 2.55, -.66, 3.02); leftAccent.lineTo(-.48, 2.78); leftAccent.bezierCurveTo(-.7, 2.1, -.76, .9, -.72, .35); leftAccent.closePath();
+extruded(leftAccent, .12, .045, accentMaterial, [0, 0, .47], [0, 0, 0], back, 'accent');
+const rightAccent = leftAccent.clone();
+const rightMesh = extruded(rightAccent, .12, .045, accentMaterial, [0, 0, .47], [0, 0, 0], back, 'accent');
+rightMesh.scale.x = -1;
 
-// Red piping and visible stitch lines.
-function line(points) {
+// Contoured headrest and metal posts.
+addMesh(new THREE.CapsuleGeometry(.055, .6, 8, 12), darkPlastic, [-.43, 4.24, -1.49]);
+addMesh(new THREE.CapsuleGeometry(.055, .6, 8, 12), darkPlastic, [.43, 4.24, -1.49]);
+const head = new THREE.Shape();
+head.moveTo(-.86, 0); head.bezierCurveTo(-1.0, .1, -.94, .85, -.66, 1.0); head.bezierCurveTo(-.36, 1.14, .36, 1.14, .66, 1.0); head.bezierCurveTo(.94, .85, 1.0, .1, .86, 0); head.bezierCurveTo(.45, -.13, -.45, -.13, -.86, 0); head.closePath();
+extruded(head, .62, .13, baseMaterial, [0, 4.02, -1.39], [-.08, 0, 0], seat, 'base');
+const headInset = head.clone();
+const headCenter = extruded(headInset, .08, .055, centerMaterial, [0, 4.02, -1.03], [-.08, 0, 0], seat, 'center');
+headCenter.scale.set(.72, .65, 1);
+
+// Piping follows the real panel edges and remains visible from oblique angles.
+function line(points, parent = seat, radius = .022) {
   const curve = new THREE.CatmullRomCurve3(points.map(([x,y,z]) => new THREE.Vector3(x,y,z)));
-  const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 36, .022, 8, false), stitchMaterial);
+  const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 52, radius, 8, false), stitchMaterial);
   mesh.castShadow = true;
-  seat.add(mesh);
+  parent.add(mesh);
   meshes.stitch.push(mesh);
 }
-line([[-.86,.88,1.05],[-.72,.92,.2],[-.78,.9,-.85]]);
-line([[.86,.88,1.05],[.72,.92,.2],[.78,.9,-.85]]);
-line([[-.76,1.58,-.65],[-.73,2.8,-.62],[-.69,3.85,-.75]]);
-line([[.76,1.58,-.65],[.73,2.8,-.62],[.69,3.85,-.75]]);
+line([[-.8,1.04,1.0],[-.88,1.05,.2],[-.76,1.03,-.92]]);
+line([[.8,1.04,1.0],[.88,1.05,.2],[.76,1.03,-.92]]);
+line([[-.7,.18,.5],[-.76,1.55,.51],[-.55,2.88,.5]], back);
+line([[.7,.18,.5],[.76,1.55,.51],[.55,2.88,.5]], back);
 
 function textureFor(design, color, stitch) {
   const size = 512;
