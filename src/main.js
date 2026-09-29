@@ -204,8 +204,15 @@ line([[.7,.18,.5],[.76,1.55,.51],[.55,2.88,.5]], back);
 new GLTFLoader().load('/models/tapiz_asiento_premium.glb', gltf => {
   const model = gltf.scene;
   model.name = 'Tapiz_Juliaca_Blender';
-  model.scale.setScalar(1.13);
   model.rotation.y = -.12;
+  model.updateMatrixWorld(true);
+  const sourceBounds = new THREE.Box3().setFromObject(model);
+  const sourceSize = sourceBounds.getSize(new THREE.Vector3());
+  model.scale.setScalar(5.35 / sourceSize.y);
+  model.updateMatrixWorld(true);
+  const fittedBounds = new THREE.Box3().setFromObject(model);
+  const fittedCenter = fittedBounds.getCenter(new THREE.Vector3());
+  model.position.set(-fittedCenter.x, -fittedBounds.min.y, -fittedCenter.z);
   model.traverse(object => {
     if (!object.isMesh) return;
     object.castShadow = true;
