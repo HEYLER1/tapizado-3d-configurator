@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import './style.css';
 
@@ -70,6 +71,7 @@ const stitchMaterial = new THREE.MeshStandardMaterial({ color: state.stitch, rou
 const darkPlastic = new THREE.MeshStandardMaterial({ color: 0x0a0b0e, roughness: 0.6, metalness: 0.25 });
 
 const meshes = { base: [], accent: [], center: [], stitch: [] };
+const blenderMaterials = { base: new Set(), accent: new Set(), center: new Set(), stitch: new Set() };
 
 function addMesh(geometry, material, position, rotation = [0, 0, 0], parent = seat, bucket = null) {
   const mesh = new THREE.Mesh(geometry, material);
@@ -197,6 +199,30 @@ line([[.8,1.04,1.0],[.88,1.05,.2],[.76,1.03,-.92]]);
 line([[-.7,.18,.5],[-.76,1.55,.51],[-.55,2.88,.5]], back);
 line([[.7,.18,.5],[.76,1.55,.51],[.55,2.88,.5]], back);
 
+// Load the production model authored in Blender. The procedural seat remains as
+// a resilient fallback if the external model cannot be loaded.
+new GLTFLoader().load('/models/tapiz_asiento_premium.glb', gltf => {
+  const model = gltf.scene;
+  model.name = 'Tapiz_Juliaca_Blender';
+  model.rotation.y = -.12;
+  model.traverse(object => {
+    if (!object.isMesh) return;
+    object.castShadow = true;
+    object.receiveShadow = true;
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach(material => {
+      const name = material.name || '';
+      if (name.includes('MAT_CUERO_MARFIL')) blenderMaterials.base.add(material);
+      else if (name.includes('MAT_PANEL_MARFIL')) blenderMaterials.center.add(material);
+      else if (name.includes('MAT_CONTRASTE_GRAFITO')) blenderMaterials.accent.add(material);
+      else if (name.includes('MAT_COSTURA_CLARA')) blenderMaterials.stitch.add(material);
+    });
+  });
+  seat.visible = false;
+  scene.add(model);
+  updateSeat();
+}, undefined, error => console.warn('Se usa el modelo 3D alternativo.', error));
+
 function textureFor(design, color, stitch) {
   const size = 512;
   const c = document.createElement('canvas');
@@ -238,6 +264,12 @@ function setMaterialFinish() {
     natural: { roughness: .38, clearcoat: .32, clearcoatRoughness: .42, bumpScale: .05 },
   }[state.material];
   [baseMaterial, accentMaterial, centerMaterial].forEach(mat => Object.assign(mat, finishes));
+  [...blenderMaterials.base, ...blenderMaterials.accent, ...blenderMaterials.center].forEach(mat => {
+    mat.roughness = finishes.roughness;
+    mat.clearcoat = finishes.clearcoat;
+    mat.clearcoatRoughness = finishes.clearcoatRoughness;
+    mat.needsUpdate = true;
+  });
 }
 
 function updateSeat() {
@@ -251,6 +283,14 @@ function updateSeat() {
   }
   accentMaterial.color.set(state.accent);
   stitchMaterial.color.set(state.stitch);
+  blenderMaterials.base.forEach(mat => mat.color.set(state.base));
+  blenderMaterials.center.forEach(mat => {
+    mat.color.set(state.base);
+    if (mat.map) mat.map.dispose();
+    mat.map = textureFor(state.design, state.base, state.stitch);
+  });
+  blenderMaterials.accent.forEach(mat => mat.color.set(state.accent));
+  blenderMaterials.stitch.forEach(mat => mat.color.set(state.stitch));
   setMaterialFinish();
   [baseMaterial, accentMaterial, centerMaterial, stitchMaterial].forEach(mat => mat.needsUpdate = true);
   updateSummary();
