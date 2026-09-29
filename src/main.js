@@ -199,9 +199,13 @@ line([[.8,1.04,1.0],[.88,1.05,.2],[.76,1.03,-.92]]);
 line([[-.7,.18,.5],[-.76,1.55,.51],[-.55,2.88,.5]], back);
 line([[.7,.18,.5],[.76,1.55,.51],[.55,2.88,.5]], back);
 
-// Load the production model authored in Blender. The procedural seat remains as
-// a resilient fallback if the external model cannot be loaded.
-new GLTFLoader().load('/models/tapiz_asiento_premium.glb', gltf => {
+// Load the production model authored in Blender. `?modelo=hilux` opens the
+// wider Hilux adaptation while the BMW-derived model remains the default.
+const requestedModel = new URLSearchParams(window.location.search).get('modelo');
+const productionModelUrl = requestedModel === 'hilux'
+  ? '/models/tapiz_hilux_sentadera.glb'
+  : '/models/tapiz_asiento_premium.glb';
+new GLTFLoader().load(productionModelUrl, gltf => {
   const model = gltf.scene;
   model.name = 'Tapiz_Juliaca_Blender';
   model.rotation.y = -.12;
