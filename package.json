@@ -1,11 +1,27 @@
 {
-  "name": "tapiz-juliaca-3d",
+  "name": "tapizado-3d-configurator",
   "private": true,
   "version": "1.0.0",
+  "description": "Configurador 3D de tapizado vehicular en Three.js y Vite: personaliza asientos de auto en tiempo real (diseño, colores, costura y material) sobre modelos GLB de Blender y cotiza por WhatsApp.",
+  "keywords": [
+    "threejs",
+    "webgl",
+    "configurador-3d",
+    "tapizado",
+    "tapiceria",
+    "automotive",
+    "upholstery",
+    "blender",
+    "glb",
+    "gltf",
+    "vite"
+  ],
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build"
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
     "three": "^0.180.0"
